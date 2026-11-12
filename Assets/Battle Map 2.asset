@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d7f8cf29235e7847a40b1edb9480141, type: 3}
+  m_Name: Battle Map 2
+  m_EditorClassIdentifier: Assembly-CSharp::MapPreset
+  mapName: Battle Map 2
+  roomType: 0
+  weight: 1
+  mapPrefab: {fileID: 4639558224434819132, guid: 2dc3d309e3e0ba14d8a93b8152e810cc, type: 3}
