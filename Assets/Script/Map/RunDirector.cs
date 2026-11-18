@@ -18,6 +18,14 @@ public class RunDirector : MonoBehaviour
     [SerializeField] private RoomChoiceUI choiceUI;
     [SerializeField] private PlayerController2D player;
 
+    [Header("쉼터 / 상점")]
+    [SerializeField] private PlayerHealth playerHealth;
+    [SerializeField] private Weapon weapon;
+    [SerializeField] private ShopUI shopUI;
+    [Range(0f, 1f)][SerializeField] private float restHealRatio = 0.3f;   // 쉼터 회복 비율
+
+
+
     private bool choosing;
 
     private MapPreset lastPreset;
@@ -32,6 +40,9 @@ public class RunDirector : MonoBehaviour
 
     private void Start()
     {
+        RunWallet.Reset();
+
+
         if (startCombatPresets == null || startCombatPresets.Length == 0)
         {
             Debug.LogWarning("RunDirector: 시작 전투방 후보가 없습니다.");
@@ -75,9 +86,24 @@ public class RunDirector : MonoBehaviour
         // 방 종류별 처리 (휴식 회복, 상점 UI 등은 이후 여기에 연결)
         switch (preset.roomType)
         {
-            case RoomType.Rest: Debug.Log("휴식방 입장"); break;
-            case RoomType.Shop: Debug.Log("상점 입장"); break;
+            case RoomType.Rest:
+                if (playerHealth != null)
+                {
+                    int heal = Mathf.RoundToInt(playerHealth.Max * restHealRatio);
+                    playerHealth.Heal(heal);
+                    Debug.Log($"쉼터: 체력 {heal} 회복");
+                }
+                break;
+
+            case RoomType.Shop:
+                if (shopUI != null && player != null)
+                {
+                    player.SetInputEnabled(false);
+                    shopUI.Open(playerHealth, weapon, () => player.SetInputEnabled(true));
+                }
+                break;
         }
+
     }
 
     // 방문하지 않은 프리셋 중 가중치 랜덤으로 중복 없이 선택

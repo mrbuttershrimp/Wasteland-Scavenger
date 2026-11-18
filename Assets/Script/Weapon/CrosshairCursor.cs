@@ -13,7 +13,7 @@ public class CrosshairCursor : MonoBehaviour
 
     [Header("옵션")]
     [SerializeField] private bool confineCursorToWindow = true; // 커서가 창 밖으로 나가지 않도록
-    [SerializeField] private KeyCode toggleKey = KeyCode.Escape; // 사용 안 함 (Input System 키로 처리)
+    [SerializeField] private KeyCode toggleKey = KeyCode.F1; // 사용 안 함 (Input System 키로 처리)
 
     private RectTransform rect;
     private bool cursorMode; // true면 일반 커서 표시

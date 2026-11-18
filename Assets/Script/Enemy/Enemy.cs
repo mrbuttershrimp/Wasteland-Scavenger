@@ -1,20 +1,31 @@
-using UnityEngine;
 using System;
+using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class Enemy : MonoBehaviour, IDamageable
 {
+    public event Action<Enemy> Died;
+
     [Header("체력")]
     [SerializeField] private int maxHealth = 30;
 
-    [Header("이동")]
+    [Header("이동 (기본 근접 추적)")]
     [SerializeField] private float moveSpeed = 2.5f;
-    [SerializeField] private float chaseRange = 8f;      // 이 거리 안에 플레이어가 들어오면 추적
-    [SerializeField] private float stopDistance = 1f;    // 이 X 거리 안에서는 멈춤
+    [SerializeField] private float chaseRange = 8f;
+    [SerializeField] private float stopDistance = 1f;
+
+    [Header("접촉 피해")]
+    [Tooltip("플레이어와 닿아 있을 때 주는 피해")]
+    [SerializeField] private int contactDamage = 10;
+    [Tooltip("접촉 피해 간격 (초)")]
+    [SerializeField] private float contactCooldown = 0.8f;
+
+    [Header("보상")]
+    [SerializeField] private int goldReward = 10;
 
     [Header("참조")]
-    [SerializeField] private Transform target;           // 비워 두면 Tag가 Player인 오브젝트를 자동 탐색
-    [SerializeField] private SpriteRenderer sprite;      // 기본 스프라이트는 오른쪽을 본다고 가정
+    [SerializeField] private Transform target;
+    [SerializeField] private SpriteRenderer sprite;
 
     [Header("피격 효과")]
     [SerializeField] private Color hitColor = Color.red;
@@ -24,9 +35,15 @@ public class Enemy : MonoBehaviour, IDamageable
     private int health;
     private Color baseColor = Color.white;
     private float flashEndTime;
-    public event Action<Enemy> Died;
+    private float nextContactTime;
+
+    // 원거리 스크립트 등 외부에서 이동을 직접 제어할 때 사용
+    [HideInInspector] public bool externalControl;
+    [HideInInspector] public float externalVx;
 
     public int Health => health;
+    public Transform Target => target;
+    public float ChaseRange => chaseRange;
 
     private void Awake()
     {
@@ -35,7 +52,6 @@ public class Enemy : MonoBehaviour, IDamageable
         rb.freezeRotation = true;
 
         health = maxHealth;
-
         if (sprite != null) baseColor = sprite.color;
 
         if (target == null)
@@ -47,7 +63,6 @@ public class Enemy : MonoBehaviour, IDamageable
 
     private void Update()
     {
-        // 피격 깜빡임 복구
         if (sprite != null && Time.time >= flashEndTime)
             sprite.color = baseColor;
     }
@@ -56,22 +71,42 @@ public class Enemy : MonoBehaviour, IDamageable
     {
         if (target == null)
         {
-            StopHorizontal();
+            rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
             return;
         }
 
         float dx = target.position.x - transform.position.x;
-        float dist = Vector2.Distance(transform.position, target.position);
 
-        float vx = 0f;
-        if (dist <= chaseRange && Mathf.Abs(dx) > stopDistance)
-            vx = Mathf.Sign(dx) * moveSpeed;
+        float vx;
+        if (externalControl)
+        {
+            vx = externalVx;
+        }
+        else
+        {
+            float dist = Vector2.Distance(transform.position, target.position);
+            vx = 0f;
+            if (dist <= chaseRange && Mathf.Abs(dx) > stopDistance)
+                vx = Mathf.Sign(dx) * moveSpeed;
+        }
 
         rb.linearVelocity = new Vector2(vx, rb.linearVelocity.y);
 
-        // 플레이어 방향을 바라보도록 좌우 반전
         if (sprite != null && Mathf.Abs(dx) > 0.01f)
             sprite.flipX = dx < 0f;
+    }
+
+    // 플레이어와 닿아 있으면 쿨다운마다 접촉 피해
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (Time.time < nextContactTime) return;
+        if (!collision.gameObject.CompareTag("Player")) return;
+
+        if (collision.gameObject.TryGetComponent(out IDamageable player))
+        {
+            player.TakeDamage(contactDamage);
+            nextContactTime = Time.time + contactCooldown;
+        }
     }
 
     public void TakeDamage(int amount)
@@ -92,13 +127,9 @@ public class Enemy : MonoBehaviour, IDamageable
 
     private void Die()
     {
+        RunWallet.Add(goldReward);
         Died?.Invoke(this);
         Destroy(gameObject);
-    }
-
-    private void StopHorizontal()
-    {
-        rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
     }
 
     private void OnDrawGizmosSelected()

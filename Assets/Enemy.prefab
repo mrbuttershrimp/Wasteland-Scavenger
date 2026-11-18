@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 1967371576789208936}
   m_Layer: 0
   m_Name: Enemy
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -124,10 +124,15 @@ MonoBehaviour:
   moveSpeed: 1.5
   chaseRange: 20
   stopDistance: 1
+  contactDamage: 10
+  contactCooldown: 0.8
+  goldReward: 10
   target: {fileID: 0}
   sprite: {fileID: 1967371576789208936}
   hitColor: {r: 1, g: 0, b: 0, a: 1}
   hitFlashTime: 0.2
+  externalControl: 0
+  externalVx: 0
 --- !u!212 &1967371576789208936
 SpriteRenderer:
   serializedVersion: 2

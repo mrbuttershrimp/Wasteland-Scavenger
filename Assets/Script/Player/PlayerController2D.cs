@@ -34,6 +34,9 @@ public class PlayerController2D : MonoBehaviour
     [Header("하체 정렬")]
     [SerializeField] private SpriteRenderer lowerBodyRenderer; // LowerBody의 SpriteRenderer
 
+    [Header("메타 업그레이드")]
+    [SerializeField] private UpgradeConfig upgrades;
+
     private Vector3 lowerStartLocalPos;
     private Vector3 upperStartLocalPos;
     private Vector3 upperRootStartPos;
@@ -107,7 +110,8 @@ public class PlayerController2D : MonoBehaviour
             lowerStartLocalPos = lowerBodyRenderer.transform.localPosition;
         if (upperRoot != null)
             upperStartLocalPos = upperRoot.localPosition;
-
+        if (upgrades != null)
+            moveSpeed += upgrades.MoveSpeedBonus;
 
     }
 

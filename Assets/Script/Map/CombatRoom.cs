@@ -31,7 +31,7 @@ public class CombatRoom : MonoBehaviour
 
         // 적이 없는 방은 바로 클리어
         if (aliveCount == 0)
-            Clear();
+            Clear(false);
         else
             LockDoors(true);
     }
@@ -42,14 +42,18 @@ public class CombatRoom : MonoBehaviour
         aliveCount--;
 
         if (aliveCount <= 0 && !cleared)
-            Clear();
+            Clear(true);
     }
 
-    private void Clear()
+    private void Clear(bool giveLoot)
     {
         cleared = true;
         LockDoors(false);
+        if (giveLoot && LootUI.Instance != null)
+            LootUI.Instance.Show();
     }
+
+
 
     private void LockDoors(bool locked)
     {

@@ -12,6 +12,10 @@ public class Weapon : MonoBehaviour
     [Header("참조")]
     [SerializeField] private Transform player;  // 플레이어 루트 (탄 충돌 무시용 태그 확인 외 선택)
 
+    [Header("강화")]
+    [SerializeField] private string weaponId = "pistol";
+    [SerializeField] private WeaponUpgradeConfig upgradeConfig;
+
     private Camera cam;
     private float nextFireTime;
     private int currentAmmo;
@@ -23,12 +27,21 @@ public class Weapon : MonoBehaviour
 
     private void Awake()
     {
+        if (data != null)
+        {
+            // 원본 에셋을 건드리지 않도록 복제한 뒤 강화값 적용
+            data = Instantiate(data);
+            if (upgradeConfig != null)
+                WeaponUpgradeProfile.Apply(weaponId, data, upgradeConfig);
+        }
         cam = Camera.main;
         currentAmmo = data != null ? data.magazineSize : 0;
     }
 
     private void Update()
     {
+        if (GamePause.IsPaused) return;
+
         if (data == null || Mouse.current == null || Keyboard.current == null) return;
 
         // 재장전 처리
@@ -82,7 +95,8 @@ public class Weapon : MonoBehaviour
 
             GameObject go = Instantiate(data.bulletPrefab, muzzle.position, Quaternion.identity);
             if (go.TryGetComponent(out Bullet bullet))
-                bullet.Init(dir, data.bulletSpeed, data.bulletLifetime, data.damage);
+                bullet.Init(dir, data.bulletSpeed, data.bulletLifetime, data.damage, "Player");
+
         }
     }
 
@@ -109,4 +123,10 @@ public class Weapon : MonoBehaviour
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(muzzle.position, 0.05f);
     }
+    public void RefillAmmo()
+    {
+        isReloading = false;
+        currentAmmo = data.magazineSize;
+    }
+
 }

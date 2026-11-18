@@ -30,6 +30,7 @@ public class MapDoor : MonoBehaviour
 
     private void Update()
     {
+        if (GamePause.IsPaused) return;
         if (!playerInside || !requireInteract) return;
         if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
             Enter();
